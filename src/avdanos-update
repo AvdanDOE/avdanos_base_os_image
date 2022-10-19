@@ -1,0 +1,62 @@
+#!/bin/zsh
+
+if [[ $EUID -ne 0 ]];
+then
+    echo "Not running as root. Authorization required\n"
+    exec pkexec --disable-internal-agent "$0" "$@"
+fi
+
+if [[ "$(realpath /proc/$PPID/exe)" == "/usr/bin/cutefish-settings" ]]; then
+    UPD_GUI=1
+else
+    echo "Warning! You're not running this in Settings application,\nand may run into issues while updating your installation.\nIt's highly recommended to run updater inside Settings."
+fi
+
+OS_CURR_VER=$(pacman -Q avdanos_base_image | cut -d " " -f 2)
+
+    if [ -n $(export | grep ARCHISO)]; then
+        OS_WARNING="OS Updates unsupported in Installer image. To try it out, please install AvdanOS on your device."
+    fi
+
+# Start by checking for updates
+# Make sure to not run pacman -Sy again when updates are already queued. That saves a lot of time.
+    export OS_UPD_VAR="/tmp/ready_for_update"
+    if [ -e "$OS_UPD_VAR"  ]; then
+        echo "Starting update..."
+        sudo pacman -S avdanos_base_image $(pacman -Si avdanos_base_image | grep Depends | cut -d ':' -f 2)
+        echo "Update finished."
+        rm /tmp/ready_for_update
+    else
+        echo "Checking for updates...\n"
+        sudo pacman -Sy | grep "we're doing a quiet update"
+        UPD_AVAIL=$(pacman -Qu | grep -e avdanos_base_image)
+    fi
+
+# Check if it's all up to date.
+    if [ -n "$UPD_AVAIL" ]; then
+        OS_VER_NEW=$(pacman -Qu avdanos_base_image | cut -d ">" -f 4)
+        CHANGELOG_CURR=$(curl -s https://avd-cdn.thevakhovske.pw/0:/0:/os_upd/changelog_${OS_CURR_VER})
+        CHANGELOG_NEW=$(curl -s https://avd-cdn.thevakhovske.pw/0:/os_upd/changelog_${OS_VER_NEW})
+        touch /tmp/ready_for_update
+        # Make sure to differentiate between running in settings and terminal emulator
+        if [ "$UPD_GUI" = "1" ]; then
+            touch /tmp/report_in_settings
+        else
+            echo "AvdanOS Update available"
+            echo "Current version: $OS_CURR_VER"
+            echo "New version: $OS_VER_NEW\n"
+            echo "Changelog: $CHANGELOG_NEW"
+        fi
+    else
+        touch /tmp/up_to_date
+        CHANGELOG_CURR=$(curl -s https://avd-cdn.thevakhovske.pw/0:/os_upd/changelog_${OS_CURR_VER})
+
+        # Make sure to differentiate between running in settings and terminal emulator
+        if [ "$UPD_GUI" = "1" ]; then
+            touch /tmp/report_in_settings
+        else
+            echo "AvdanOS Up to date"
+            echo "Current version: $OS_CURR_VER\n"
+            echo "Current changelog: $CHANGELOG_CURR"
+        fi
+    fi
