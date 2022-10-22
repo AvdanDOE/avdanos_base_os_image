@@ -8,6 +8,7 @@ package() {
     mkdir -p "${pkgdir}/usr/bin"
     mkdir -p "${pkgdir}/etc"
     cp "${srcdir}/avdanos-update" "${pkgdir}/usr/bin/avdanos-update"
-    echo "${pkgver}-${pkgrel}" > "${pkgdir}/etc/avdanos-release"
+    echo "OS_VERSION=\""${pkgver}-${pkgrel}\"" > "${pkgdir}/etc/avdanos-release"
+    echo "OS_RELEASE=\""priv-beta\"" >> "${pkgdir}/etc/avdanos-release"
     chmod +x "${pkgdir}/usr/bin/avdanos-update"
 }
