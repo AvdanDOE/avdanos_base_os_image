@@ -29,9 +29,7 @@ echo "OS_CURR_VER=\"${OS_CURR_VER}\"" >> /tmp/updator/request.avupd
     export OS_UPD_VAR="/tmp/ready_for_update"
     if [ -e "$OS_UPD_VAR"  ]; then
         echo "Starting update..."
-        sudo pacman -S avdanos_base_image $(pacman -Si avdanos_base_image | grep Depends | cut -d ':' -f 2)
-        echo "Update finished."
-        rm /tmp/ready_for_update
+        sudo pacman -S avdanos_base_image $(avdanos_base_image | grep Depends | cut -d ':' -f 2 | sed 's/None//g')
     else
         echo "Checking for updates...
         "
@@ -41,7 +39,7 @@ echo "OS_CURR_VER=\"${OS_CURR_VER}\"" >> /tmp/updator/request.avupd
 
 # Check if it's all up to date.
     if [ -n "$UPD_AVAIL" ]; then
-        export OS_VER_NEW=$(pacman -Qu avdanos_base_image | cut -d ">" -f 4)
+        export OS_VER_NEW=$(pacman -Qu avdanos_base_image | cut -d " " -f 4)
         CHANGELOG_CURR=$(curl -s https://avd-cdn.thevakhovske.pw/0:/os_upd/changelog_${OS_CURR_VER})
         CHANGELOG_NEW=$(curl -s https://avd-cdn.thevakhovske.pw/0:/os_upd/changelog_${OS_VER_NEW})
         touch /tmp/ready_for_update
@@ -59,6 +57,9 @@ echo "OS_CURR_VER=\"${OS_CURR_VER}\"" >> /tmp/updator/request.avupd
             "
             echo "Changelog: $CHANGELOG_NEW"
         fi
+    elif [ -e "$OS_UPD_VAR"  ]; then
+        echo "Update Complete."
+        rm /tmp/ready_for_update
     else
         touch /tmp/up_to_date
         CHANGELOG_CURR=$(curl -s https://avd-cdn.thevakhovske.pw/0:/os_upd/changelog_${OS_CURR_VER})
