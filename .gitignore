@@ -2,3 +2,4 @@
 src/doebox/
 pkg/
 pkg/avdanos_base_image/
+pkg/avdanos_base_image/usr/bin/avdanos-update
