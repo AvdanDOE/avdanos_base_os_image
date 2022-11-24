@@ -3,6 +3,7 @@ pkgver="rel.$(date +%Y%m%d.%H%M)"
 pkgdesc="AvdanOS Base essential OS image files"
 pkgrel="1"
 arch=("x86_64")
+depends=('cutefish-core' 'zsh')
 
 package() {
     rm -rf doebox
