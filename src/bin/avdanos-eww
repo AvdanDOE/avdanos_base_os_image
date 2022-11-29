@@ -1,0 +1,4 @@
+#!/bin/zsh
+# Placeholder for now
+eww -c /etc/avdanos/dock
+eww open-many dockdynamic dockmain dockstatic dockstatus

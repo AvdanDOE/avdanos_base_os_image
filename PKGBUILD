@@ -12,6 +12,8 @@ package() {
     mkdir -p "${pkgdir}/etc"
     mkdir -p "${pkgdir}/etc/avdanos"
     cp -r doebox/configuration/eww/dock ${pkgdir}/etc/avdanos
+    cp -r doebox/configuration/eww/globalassets ${pkgdir}/etc/avdanos
+    chmod -R +x ${pkgdir}/etc/avdanos/dock/scripts
     cp -r "${srcdir}/bin" "${pkgdir}/usr"
     echo "OS_VERSION=${pkgver}-${pkgrel}" > "${pkgdir}/etc/avdanos-release"
     echo "OS_RELEASE=priv-beta" >> "${pkgdir}/etc/avdanos-release"
