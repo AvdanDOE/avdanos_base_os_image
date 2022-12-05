@@ -1,9 +1,9 @@
 pkgname=avdanos_base_image
-pkgver="rel.$(date +%Y%m%d.%H%M)"
+pkgver="rel.$(date +%Y%m%d.%H%M).dp1"
 pkgdesc="AvdanOS Base essential OS image files"
 pkgrel="1"
 arch=("x86_64")
-depends=('cutefish-core' 'zsh')
+depends=('filesystem' 'lsb-release' 'neofetch' 'cutefish-core' 'eww-git' 'zsh' 'harmonyos-sans-git' 'ttf-material-design-icons-git')
 
 package() {
     rm -rf doebox

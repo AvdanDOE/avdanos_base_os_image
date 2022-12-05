@@ -29,7 +29,7 @@ echo "OS_CURR_VER=\"${OS_CURR_VER}\"" >> /tmp/updator/request.avupd
     export OS_UPD_VAR="/tmp/ready_for_update"
     if [ -e "$OS_UPD_VAR"  ]; then
         echo "Starting update..."
-        sudo pacman -S --noconfirm avdanos_base_image $(avdanos_base_image | grep Depends | cut -d ':' -f 2 | sed 's/None//g')
+        sudo pacman -S --noconfirm avdanos_base_image $(sudo pacman -Si avdanos_base_image | grep Depends | cut -d ':' -f 2 | sed 's/None//g')
     else
         echo "Checking for updates...
         "
