@@ -3,6 +3,7 @@
 
 # Initialize session sentinel
 if [[ -f /tmp/avdanos/doebox-session ]]; then
+    mkdir -p /home/liveuser/.config/eww/
     cp -r /etc/avdanos/dock /home/liveuser/.config/eww/dock
     chmod $USER:$USER /home/liveuser/.config/eww/dock
     # Start EWW
