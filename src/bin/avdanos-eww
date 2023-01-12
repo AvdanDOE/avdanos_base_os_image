@@ -3,13 +3,18 @@
 
 # Initialize session sentinel
 if [[ -f /tmp/avdanos/doebox-session ]]; then
-    mkdir -p /home/liveuser/.config/eww/
-    cp -r /etc/avdanos/dock /home/liveuser/.config/eww/dock
-    cp -r /etc/avdanos/globalassets /home/liveuser/.config/eww/globalassets
-    chmod $USER:$USER /home/liveuser/.config/eww/dock
+
+    # I hate you, keri.
+    rm -rf ~/.config/eww
+    ## fi
+    
+    mkdir -p ~/.config/eww/
+    cp -r /etc/avdanos/dock ~/.config/eww/dock
+    cp -r /etc/avdanos/globalassets ~/.config/eww/globalassets
+    chmod $USER:$USER ~/.config/eww/dock
     # Start EWW
-    eww -c /home/liveuser/.config/eww/dock daemon
-    eww -c /home/liveuser/.config/eww/dock open-many dockdynamic dockmain dockstatic dockstatus
+    eww -c ~/.config/eww/dock daemon
+    eww -c ~/.config/eww/dock open-many dockdynamic dockmain dockstatic dockstatus
 else
     echo "Unable to start dock. Are you running in DOEBox?"
 fi
