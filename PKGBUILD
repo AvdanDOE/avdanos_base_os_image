@@ -3,7 +3,7 @@ pkgver="rel.$(date +%Y%m%d.%H%M).dp1"
 pkgdesc="AvdanOS Base essential OS image files"
 pkgrel="1"
 arch=("x86_64")
-depends=('filesystem' 'lsb-release' 'neofetch' 'cutefish-core' 'eww-git' 'zsh' 'harmonyos-sans-git' 'ttf-material-design-icons-git')
+depends=('filesystem' 'lsb-release' 'neofetch' 'cutefish-core' 'eww-git' 'zsh' 'harmonyos-sans-git' 'ttf-material-design-icons-git' 'xbindkeys' 'volnoti')
 
 package() {
     rm -rf doebox
