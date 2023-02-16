@@ -7,7 +7,7 @@ depends=('filesystem' 'lsb-release' 'neofetch' 'cutefish-core' 'eww-git' 'zsh' '
 
 package() {
     rm -rf doebox
-    git clone https://github.com/AvdanDOE/doebox/ -b v1lune-dp1
+    git clone https://github.com/AvdanDOE/doebox/ -b v1lune-dp2
     mkdir -p "${pkgdir}/usr"
     mkdir -p "${pkgdir}/etc"
     mkdir -p "${pkgdir}/etc/avdanos"
