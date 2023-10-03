@@ -1,15 +1,12 @@
 #!/bin/zsh
 
-mkdir -p /tmp/updator
-echo "AvdanOS Updator request at $(date)" > /tmp/updator/request.avupd
-
 if [[ $EUID -ne 0 ]];
 then
     echo "Not running as root. Authorization required\n"
     exec pkexec --disable-internal-agent "$0" "$@"
 fi
 
-if [[ "$(realpath /proc/$PPID/exe)" == "/usr/bin/cutefish-settings" ]]; then
+if [[ "$(realpath /proc/$PPID/exe)" == "/usr/bin/doeshell_settings" ]] && [[ "$1" == "query_atomic_upd" ]]; then
 export UPD_GUI=1
 else
     echo "Warning! You're not running this in Settings application,
@@ -17,61 +14,37 @@ else
     It's highly recommended to run updater inside Settings."
 fi
 
-export OS_CURR_VER=$(pacman -Q avdanos_base_image | cut -d " " -f 2)
-echo "OS_CURR_VER=\"${OS_CURR_VER}\"" >> /tmp/updator/request.avupd
+export OS_CURR_VER=$(cat /etc/snapshots/current.json)
 
-    if [ -n $(export | grep ARCHISO)]; then
+    if [[ "$(doectl --get-current-snapshot)" == *"installer"* ]]; then
         export OS_WARNING="OS Updates unsupported in Installer image. To try it out, please install AvdanOS on your device."
     fi
 
+print_debug() {
+    info $(doectl --get-current=bootslot)
+    info $(doectl --get-current-snapshot)
+    info $(doectl --get-current=grub_bootset)
+}
+
+reboot_opposite_slot_force() {
+# SHOULD BE ONLY USED BY US: HERE'S WHY:
+# 1. We reboot to /snapshots/rootfs_b because we assume update has finished succesfully
+# 2. If it didn't, and we suddenly switch to older rootfs image, except random stuff like
+# doeshell returning code 255 or doectl unable to report any status about current image
+    echo "DOEENV_NEXT_SLOT=B" >> /boot_2nd/grub/doe/doeenv.cfg
+    doectl --reboot_to_slot=B --scheduled
+    doeshell --notify=BN_Event_BypassDBus_UpdateFinished
+    systemctl reboot
+}
+
 # Start by checking for updates
 # Make sure to not run pacman -Sy again when updates are already queued. That saves a lot of time.
-    export OS_UPD_VAR="/tmp/ready_for_update"
-    if [ -e "$OS_UPD_VAR"  ]; then
-        echo "Starting update..."
-        sudo pacman -S --noconfirm avdanos_base_image $(sudo pacman -Si avdanos_base_image | grep Depends | cut -d ':' -f 2 | sed 's/None//g')
-    else
+   # export OS_UPD_VAR="/tmp/ready_for_update"
+    if [[ "$1" == "query_atomic_upd" ]];
         echo "Checking for updates...
-        "
-        sudo pacman -Sy | grep "we're doing a quiet update"
-        export UPD_AVAIL=$(pacman -Qu | grep -e avdanos_base_image)
-    fi
-
-# Check if it's all up to date.
-    if [ -n "$UPD_AVAIL" ]; then
-        export OS_VER_NEW=$(pacman -Qu avdanos_base_image | cut -d " " -f 4)
-        CHANGELOG_CURR=$(curl -s https://avd-cdn.thevakhovske.pw/0:/os_upd/changelog_${OS_CURR_VER})
-        CHANGELOG_NEW=$(curl -s https://avd-cdn.thevakhovske.pw/0:/os_upd/changelog_${OS_VER_NEW})
-        touch /tmp/ready_for_update
-        echo "UPD_AVAIL=\"${UPD_AVAIL}\"" >> /tmp/updator/request.avupd
-        echo "OS_VER_NEW=\"${OS_VER_NEW}\"" >> /tmp/updator/request.avupd
-        echo "CHANGELOG_CURR=\"${CHANGELOG_CURR}\"" >> /tmp/updator/request.avupd
-        echo "CHANGELOG_NEW=\"${CHANGELOG_NEW}\"" >> /tmp/updator/request.avupd
-        # Make sure to differentiate between running in settings and terminal emulator
-        if [ "$UPD_GUI" = "1" ]; then
-            touch /tmp/report_in_settings
-        else
-            echo "AvdanOS Update available"
-            echo "Current version: $OS_CURR_VER"
-            echo "New version: $OS_VER_NEW
-            "
-            echo "Changelog: $CHANGELOG_NEW"
-        fi
-    elif [ -e "$OS_UPD_VAR"  ]; then
-        echo "Update Complete."
-        rm /tmp/ready_for_update
-    else
-        touch /tmp/up_to_date
-        CHANGELOG_CURR=$(curl -s https://avd-cdn.thevakhovske.pw/0:/os_upd/changelog_${OS_CURR_VER})
-        echo "UP_TO_DATE=\"1\"" >> /tmp/updator/request.avupd
-        echo "CHANGELOG_CURR=\"${CHANGELOG_CURR}\"" >> /tmp/updator/request.avupd
-        # Make sure to differentiate between running in settings and terminal emulator
-        if [ "$UPD_GUI" = "1" ]; then
-            touch /tmp/report_in_settings
-        else
-            echo "AvdanOS Up to date"
-            echo "Current version: $OS_CURR_VER
-            "
-            echo "Current changelog: $CHANGELOG_CURR"
+        avdanos_atomicupdate --get_from_endpoint $BRANCH $OS_CURR_VER $BOOTSLOT
+        if [[ "$?" == "1" ]]; 
+            echo "Update available: $(cat /tmp/rauc_front/*.json)
+            echo "Unable to update now, ESTATUS:not_implemented"
         fi
     fi
